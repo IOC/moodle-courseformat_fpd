@@ -47,10 +47,13 @@ class format_fpd_renderer extends format_section_renderer_base {
 
     private function post_rating($post) {
         $ratings = isset($post->ratings) ? $post->ratings : array();
-        $rating = $ratings ? round(array_sum($ratings) / count($ratings)) : 0;
+        $rating = $ratings ? round(2 * array_sum($ratings) / count($ratings)) * 0.5 : 0;
         $output = html_writer::start_div('format-fpd-post-rating');
-        for ($i = 0; $i < $rating; $i++) {            
-            $output .= html_writer::div('', 'format-fpd-star-full');
+        for ($i = 1; $i <= $rating; $i++) {
+            $output .= html_writer::div('', 'format-fpd-star format-fpd-star-full');
+        }
+        if ($i == $rating + 0.5) {
+            $output .= html_writer::div('', 'format-fpd-star format-fpd-star-half');
         }
         $output .= html_writer::end_div();
         return $output;
