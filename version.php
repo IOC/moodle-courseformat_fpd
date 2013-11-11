@@ -8,7 +8,7 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2013103000;
+$plugin->version   = 2013103001;
 $plugin->requires  = 2013051400;
 $plugin->component = 'format_fpd';
 $plugin->dependencies = array(

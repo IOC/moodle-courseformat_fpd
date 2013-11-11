@@ -99,6 +99,12 @@ class format_fpd_renderer extends format_section_renderer_base {
 
         echo $this->output->heading($link, 3, 'format-fpd-title');
 
+        if ($cmblog->showdescription) {
+            echo html_writer::div(
+                format_module_intro('oublog', $oublog, $cmblog->id),
+                'format-fpd-intro');
+        }
+
         if ($oublog->readtracking and $options['blognumunread'] > 0
             and $controller and $controller->es_professor()) {
             list($posts, $cnt) = oublog_get_posts(
@@ -167,6 +173,12 @@ class format_fpd_renderer extends format_section_renderer_base {
 
         $link = $this->output->action_link($url, $name);
         echo $this->output->heading($link, 3, 'format-fpd-title');
+
+        if ($controller->cm->showdescription) {
+            echo html_writer::div(
+                format_module_intro('fpdquadern', $controller->quadern, $controller->cm->id),
+                'format-fpd-intro');
+        }
 
         if ($controller->es_alumne()) {
             $accions = $controller->accions_pendents();
