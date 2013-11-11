@@ -59,9 +59,11 @@ class format_fpd_renderer extends format_section_renderer_base {
         return $output;
     }
 
-    private function print_posts($oublog, $posts, $heading) {
+    private function print_posts($oublog, $posts, $url, $heading) {
         echo html_writer::start_div('format-fpd-posts');
-        echo html_writer::div($heading, 'format-fpd-posts-heading');
+        echo html_writer::start_div('format-fpd-posts-heading');
+        echo html_writer::tag('a', $heading, array('href' => $url));
+        echo html_writer::end_div();
         foreach ($posts as $post) {
             $url = new moodle_url(
                 '/mod/oublog/viewpost.php', array('post' => $post->id));
@@ -103,7 +105,9 @@ class format_fpd_renderer extends format_section_renderer_base {
                 $oublog, $context, 0, $cmblog, 0, -1, null, '', false,
                 false, true, $options['blognumunread']);
             if ($posts) {
-                $this->print_posts($oublog, $posts, 'Missatges no llegits');
+                $url = new moodle_url($cmblog->get_url());
+                $url->params(array('individual' => 0, 'unread' => true));
+                $this->print_posts($oublog, $posts, $url, 'Missatges no llegits');
             }
         }
 
@@ -112,7 +116,9 @@ class format_fpd_renderer extends format_section_renderer_base {
                 $oublog, $context, 0, $cmblog, 0, -1, null, '', false,
                 false, false, $options['blognumrecent']);
             if ($posts) {
-                $this->print_posts($oublog, $posts, 'Missatges recents');
+                $url = new moodle_url($cmblog->get_url());
+                $url->params(array('individual' => 0));
+                $this->print_posts($oublog, $posts, $url, 'Missatges recents');
             }
         }
 
@@ -121,8 +127,9 @@ class format_fpd_renderer extends format_section_renderer_base {
                 $oublog, $context, 0, $cmblog, 0, -1, null, '', false,
                 true, false, $options['blognumtoprated']);
             if ($posts) {
-                $this->print_posts(
-                    $oublog, $posts, 'Missatges més ben valorats');
+                $url = new moodle_url($cmblog->get_url());
+                $url->params(array('individual' => 0, 'toprated' => true));
+                $this->print_posts($oublog, $posts, $url, 'Missatges més ben valorats');
             }
         }
 
