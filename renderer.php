@@ -12,7 +12,7 @@ require_once($CFG->dirroot . '/course/format/renderer.php');
 
 class format_fpd_renderer extends format_section_renderer_base {
 
-    public function print_page($course, $cmblog, $controller, $groupid) {
+    public function print_page($course, $options, $cmblog, $controller, $groupid) {
         $completioninfo = new completion_info($course);
         echo $completioninfo->display_help_icon();
 
@@ -25,7 +25,7 @@ class format_fpd_renderer extends format_section_renderer_base {
         echo $this->end_section_list();
 
         if ($cmblog) {
-            $this->print_blog($cmblog, $controller);
+            $this->print_blog($options, $cmblog, $controller);
         }
 
         if ($controller) {
@@ -81,7 +81,7 @@ class format_fpd_renderer extends format_section_renderer_base {
         echo html_writer::end_div();
     }
 
-    private function print_blog($cmblog, $controller) {
+    private function print_blog($options, $cmblog, $controller) {
         global $DB;
 
         $context = context_module::instance($cmblog->id);
@@ -97,22 +97,29 @@ class format_fpd_renderer extends format_section_renderer_base {
 
         echo $this->output->heading($link, 3, 'format-fpd-title');
 
-        if ($oublog->readtracking and $controller and $controller->es_professor()) {
+        if ($oublog->readtracking and $options['blognumunread'] > 0
+            and $controller and $controller->es_professor()) {
             list($posts, $cnt) = oublog_get_posts(
-                $oublog, $context, 0, $cmblog, 0, -1, null, '', false, false, true);
+                $oublog, $context, 0, $cmblog, 0, -1, null, '', false,
+                false, true, $options['blognumunread']);
             if ($posts) {
                 $this->print_posts($oublog, $posts, 'Missatges no llegits');
             }
         }
 
-        list($posts, $cnt) = oublog_get_posts($oublog, $context, 0, $cmblog, 0);
-        if ($posts) {
-            $this->print_posts($oublog, $posts, 'Missatges recents');
+        if ($options['blognumrecent'] > 0) {
+            list($posts, $cnt) = oublog_get_posts(
+                $oublog, $context, 0, $cmblog, 0, -1, null, '', false,
+                false, false, $options['blognumrecent']);
+            if ($posts) {
+                $this->print_posts($oublog, $posts, 'Missatges recents');
+            }
         }
 
-        if ($oublog->allowratings) {
+        if ($oublog->allowratings and $options['blognumtoprated'] > 0) {
             list($posts, $cnt) = oublog_get_posts(
-                $oublog, $context, 0, $cmblog, 0, -1, null, '', false, true);
+                $oublog, $context, 0, $cmblog, 0, -1, null, '', false,
+                true, false, $options['blognumtoprated']);
             if ($posts) {
                 $this->print_posts(
                     $oublog, $posts, 'Missatges més ben valorats');

@@ -17,6 +17,7 @@ $groupid = optional_param('group', 0, PARAM_INT);
 
 $format = course_get_format($course);
 $course = $format->get_course();
+$options = $format->get_format_options();
 
 course_create_sections_if_missing($course, array(0, 1));
 
@@ -32,7 +33,7 @@ if (!$cmquadern->uservisible) {
 }
 
 $renderer = $PAGE->get_renderer('format_fpd');
-$renderer->print_page($course, $cmblog, $controller, $groupid);
+$renderer->print_page($course, $options, $cmblog, $controller, $groupid);
 
 // Include course format js module
 $PAGE->requires->js('/course/format/topics/format.js');

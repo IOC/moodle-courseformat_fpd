@@ -26,6 +26,26 @@ class format_fpd extends format_base {
         return array('sectiontitles' => $titles, 'action' => 'move');
     }
 
+    public function course_format_options($foreditform = false) {
+        return array(
+            'blognumunread' => array(
+                'label' => 'Nombre de missatges no llegits del bog',
+                'default' => 10,
+                'type' => PARAM_INT,
+            ),
+            'blognumrecent' => array(
+                'label' => 'Nombre de missatges recents del blog',
+                'default' => 10,
+                'type' => PARAM_INT,
+            ),
+            'blognumtoprated' => array(
+                'label' => 'Nombre de missatges més ben valorats del blog',
+                'default' => 10,
+                'type' => PARAM_INT,
+            ),
+        );
+    }
+
     public function es_alumne() {
         $cmquadern = $this->get_quadern();
         $context = context_module::instance($cmquadern->id);
@@ -54,11 +74,11 @@ class format_fpd extends format_base {
     }
 
     public function get_format_options($section = null) {
+        $options = parent::get_format_options($section);
         if ($section === null) {
-            return array('numsections' => 0);
-        } else {
-            return array();
+            $options['numsections'] = 0;
         }
+        return $options;
     }
 
     public function get_blog() {
