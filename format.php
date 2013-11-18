@@ -19,12 +19,12 @@ $format = course_get_format($course);
 $course = $format->get_course();
 $options = $format->get_format_options();
 
-course_create_sections_if_missing($course, array(0, 1));
+course_create_sections_if_missing($course, range(0, $course->numsections));
 
 $cmblog = $format->get_blog();
 $cmquadern = $format->get_quadern();
 
-if (!$cmquadern->uservisible) {
+if (!$cmquadern or !$cmquadern->uservisible) {
     $controller = null;
 } elseif ($format->es_alumne()) {
     $controller = new mod_fpdquadern\alumne_controller($cmquadern, $USER->id);

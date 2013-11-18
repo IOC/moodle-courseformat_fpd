@@ -28,6 +28,11 @@ class format_fpd extends format_base {
 
     public function course_format_options($foreditform = false) {
         return array(
+            'numsections' => array(
+                'label' => new lang_string('numberweeks'),
+                'default' => 0,
+                'type' => PARAM_INT,
+            ),
             'blognumunread' => array(
                 'label' => 'Nombre de missatges no llegits del bog',
                 'default' => 10,
@@ -53,32 +58,11 @@ class format_fpd extends format_base {
     }
 
     public function extend_course_navigation($navigation, navigation_node $node) {
-        global $USER;
+        // Crea blog i quadern si no existeixen
+        $this->get_blog();
+        $this->get_quadern();
 
         parent::extend_course_navigation($navigation, $node);
-
-        $urlparams = null;       
-        if ($this->es_alumne()) {
-            $urlparams = array('individual' => $USER->id);
-        }
-        $this->add_navigation($node, $this->get_blog(), $urlparams);
-
-        $urlparams = null;       
-        if ($this->es_alumne()) {
-            $urlparams = array(
-                'accio' => 'veure_alumne',
-                'alumne_id' => $USER->id,
-            );
-        }
-        $this->add_navigation($node, $this->get_quadern(), $urlparams);
-    }
-
-    public function get_format_options($section = null) {
-        $options = parent::get_format_options($section);
-        if ($section === null) {
-            $options['numsections'] = 0;
-        }
-        return $options;
     }
 
     public function get_blog() {
@@ -90,16 +74,22 @@ class format_fpd extends format_base {
 
         require_once($CFG->dirroot . '/mod/oublog/lib.php');
 
-        $modid = $DB->get_field(
-            'modules', 'id', array('name' => 'oublog'), MUST_EXIST);
-
         $data = new object;
         $data->course = $this->courseid;
         $data->name = 'Blog';
         $data->grade = 0;
         $data->id = oublog_add_instance($data);
 
-        return $this->add_cm($modid, $data->id);
+        return $this->add_cm('oublog', $data->id);
+    }
+
+    public function get_format_options($section = null) {
+        $options = parent::get_format_options($section);
+        if ($section === null) {
+            $options['coursedisplay'] = COURSE_DISPLAY_MULTIPAGE;
+            $options['hiddensections'] = 1;
+        }
+        return $options;
     }
 
     public function get_quadern() {
@@ -111,28 +101,24 @@ class format_fpd extends format_base {
 
         require_once($CFG->dirroot . '/mod/fpdquadern/lib.php');
 
-        $modid = $DB->get_field(
-            'modules', 'id', array('name' => 'fpdquadern'), MUST_EXIST);
-
         $data = new object;
         $data->course = $this->courseid;
         $data->name = 'Quadern';
         $data->grade = 0;
         $data->id = fpdquadern_add_instance($data);
 
-        return $this->add_cm($modid, $data->id);
+        return $this->add_cm('fpdquadern', $data->id);
     }
 
     public function get_section_name($section) {
-        $sectionnum = is_object($section) ? $section->section : $section;
-
-        switch($sectionnum) {
-        case 0: 
+        $section = $this->get_section($section);
+        if ((string)$section->name !== '') {
+            return format_string($section->name, true,
+                    array('context' => context_course::instance($this->courseid)));
+        } else if ($section->section == 0) {
             return get_string('section0name', 'format_topics');
-        case 1:
-            return "Configuració blog / quadern";
-        default:
-            return "Secció $sectionnum";
+        } else {
+            return get_string('topic').' '.$section->section;
         }
     }
 
@@ -153,20 +139,31 @@ class format_fpd extends format_base {
         $modinfo = get_fast_modinfo($course);
 
         foreach ($modinfo->get_instances_of($modname) as $cm) {
-            if ($cm->sectionnum == 1) {
+            if ($cm->sectionnum == 0) {
                 return $cm;
             }
         }
+
+        foreach ($modinfo->get_instances_of($modname) as $cm) {
+            $sectioninfo = $modinfo->get_section_info(0, MUST_EXIST);
+            moveto_module($cm, $sectioninfo);
+            get_fast_modinfo($course, 0, true);
+            return $this->get_cm($modname);
+        }
     }
 
-    private function add_cm($module, $instance) {
+    private function add_cm($modname, $instance) {
+        global $DB;
+
         $course = $this->get_course();
+        $modid = $DB->get_field(
+            'modules', 'id', array('name' => $modname), MUST_EXIST);
 
         $cm = new stdClass();
         $cm->course = $course->id;
-        $cm->module = $module;
+        $cm->module = $modid;
         $cm->instance = $instance;
-        $cm->section = 1;
+        $cm->section = 0;
         $cm->id = add_course_module($cm);
         course_add_cm_to_section($course, $cm->id, $cm->section);
 
@@ -174,36 +171,5 @@ class format_fpd extends format_base {
         $modinfo = get_fast_modinfo($course, 0);
 
         return $modinfo->get_cm($cm->id);
-    }
-
-    private function add_navigation($node, $cm, array $urlparams=null) {
-        if (!$cm->uservisible) {
-            return;
-        }
-
-        $modulename = get_string('modulename', $cm->modname);
-        if ($cm->icon) {
-            $icon = new pix_icon($cm->icon, $modulename, $cm->iconcomponent);
-        } else {
-            $icon = new pix_icon('icon', $modulename, $cm->modname);
-        }
-        $context = context_module::instance($cm->id);
-        $name = format_string($cm->name, true, array('context' => $context));
-        $url = $cm->get_url();
-        if ($urlparams) {
-            $url->params($urlparams);
-        }
-        $action = new moodle_url($cm->get_url());
-
-        $cmnode = $node->add(
-            $name, $action, navigation_node::TYPE_ACTIVITY,
-            null, $cm->id, $icon);
-        
-        if (global_navigation::module_extends_navigation($cm->modname)) {
-            $cmnode->nodetype = navigation_node::NODETYPE_BRANCH;
-        } else {
-            $cmnode->nodetype = navigation_node::NODETYPE_LEAF;
-        }
-        $cmnode->hidden = !$cm->visible;
     }
 }
