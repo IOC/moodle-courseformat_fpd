@@ -227,7 +227,7 @@ class format_fpd_renderer extends format_section_renderer_base {
             if ($posts) {
                 $url = new moodle_url($cmblog->get_url());
                 $url->params(array('individual' => 0, 'unread' => true));
-                $this->print_posts($oublog, $posts, $url, 'Missatges no llegits');
+                $this->print_posts($oublog, $posts, $url, 'Entrades no llegides');
             }
         }
 
@@ -238,7 +238,7 @@ class format_fpd_renderer extends format_section_renderer_base {
             if ($posts) {
                 $url = new moodle_url($cmblog->get_url());
                 $url->params(array('individual' => 0));
-                $this->print_posts($oublog, $posts, $url, 'Missatges recents');
+                $this->print_posts($oublog, $posts, $url, 'Entrades recents');
             }
         }
 
@@ -249,7 +249,7 @@ class format_fpd_renderer extends format_section_renderer_base {
             if ($posts) {
                 $url = new moodle_url($cmblog->get_url());
                 $url->params(array('individual' => 0, 'toprated' => true));
-                $this->print_posts($oublog, $posts, $url, 'Missatges més ben valorats');
+                $this->print_posts($oublog, $posts, $url, 'Entrades més ben valorades');
             }
         }
 

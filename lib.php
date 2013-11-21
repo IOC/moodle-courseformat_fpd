@@ -34,17 +34,17 @@ class format_fpd extends format_base {
                 'type' => PARAM_INT,
             ),
             'blognumunread' => array(
-                'label' => 'Nombre de missatges no llegits del bog',
+                'label' => "Nombre d'entrades no llegides del bog",
                 'default' => 10,
                 'type' => PARAM_INT,
             ),
             'blognumrecent' => array(
-                'label' => 'Nombre de missatges recents del blog',
+                'label' => "Nombre d'entrades recents del blog",
                 'default' => 10,
                 'type' => PARAM_INT,
             ),
             'blognumtoprated' => array(
-                'label' => 'Nombre de missatges més ben valorats del blog',
+                'label' => "Nombre d'entrades més ben valorades del blog",
                 'default' => 10,
                 'type' => PARAM_INT,
             ),
