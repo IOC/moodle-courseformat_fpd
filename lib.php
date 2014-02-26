@@ -86,7 +86,7 @@ class format_fpd extends format_base {
     public function get_format_options($section = null) {
         $options = parent::get_format_options($section);
         if ($section === null) {
-            $options['coursedisplay'] = COURSE_DISPLAY_MULTIPAGE;
+            $options['coursedisplay'] = COURSE_DISPLAY_SINGLEPAGE;
             $options['hiddensections'] = 1;
         }
         return $options;
