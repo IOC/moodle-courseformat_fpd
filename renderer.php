@@ -222,7 +222,7 @@ class format_fpd_renderer extends format_section_renderer_base {
         if ($oublog->readtracking and $options['blognumunread'] > 0
             and $controller and $controller->es_professor()) {
             list($posts, $cnt) = oublog_get_posts(
-                $oublog, $context, 0, $cmblog, 0, -1, null, '', false,
+                $oublog, $context, 0, $cmblog, 0, -1, null, '', false, false,
                 false, true, $options['blognumunread']);
             if ($posts) {
                 $url = new moodle_url($cmblog->get_url());
@@ -233,7 +233,7 @@ class format_fpd_renderer extends format_section_renderer_base {
 
         if ($options['blognumrecent'] > 0) {
             list($posts, $cnt) = oublog_get_posts(
-                $oublog, $context, 0, $cmblog, 0, -1, null, '', false,
+                $oublog, $context, 0, $cmblog, 0, -1, null, '', false, false,
                 false, false, $options['blognumrecent']);
             if ($posts) {
                 $url = new moodle_url($cmblog->get_url());
@@ -244,7 +244,7 @@ class format_fpd_renderer extends format_section_renderer_base {
 
         if ($oublog->allowratings and $options['blognumtoprated'] > 0) {
             list($posts, $cnt) = oublog_get_posts(
-                $oublog, $context, 0, $cmblog, 0, -1, null, '', false,
+                $oublog, $context, 0, $cmblog, 0, -1, null, '', false, false,
                 true, false, $options['blognumtoprated']);
             if ($posts) {
                 $url = new moodle_url($cmblog->get_url());

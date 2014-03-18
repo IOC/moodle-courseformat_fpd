@@ -13,5 +13,5 @@ $plugin->requires  = 2013051400;
 $plugin->component = 'format_fpd';
 $plugin->dependencies = array(
     'mod_fpdquadern' => 2013102908,
-    'mod_oublog' => 2013101000,
+    'mod_oublog' => 2014012703,
 );
