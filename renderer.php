@@ -13,10 +13,19 @@ require_once($CFG->dirroot . '/course/format/renderer.php');
 class format_fpd_renderer extends format_section_renderer_base {
 
     public function print_page($course, $options, $cmblog, $controller, $groupid) {
-        // Codi basat en format_section_renderer_base::print_multiple_section_page
-        // L'única diferència és en la secció 0.
-
         global $PAGE;
+
+        // Quan s'està editant, es mostra com un curs normal.
+        if ($PAGE->user_is_editing()) {
+            $this->print_multiple_section_page($course, null, null, null, null);
+            return;
+        }
+
+        // Codi basat en format_section_renderer_base::print_multiple_section_page,
+        // amb aquestes diferències:
+        //   - Funció diferent per a mostrar els mòdulsd de la secció 0.
+        //   - Informació addicional del blog i del quadern.
+        //   - Eliminació dels casos amb l'edició activada.
 
         $modinfo = get_fast_modinfo($course);
         $course = course_get_format($course)->get_course();
@@ -35,26 +44,16 @@ class format_fpd_renderer extends format_section_renderer_base {
 
         foreach ($modinfo->get_section_info_all() as $section => $thissection) {
             if ($section == 0) {
-                // Amaga els enllaços del blog i del quadern
-                $modblog = $modinfo->get_cm($cmblog->id);
-                $modquadern = $modinfo->get_cm($controller->cm->id);
-                $blogvisible = $modblog->uservisible;
-                $quadernvisible = $modquadern->uservisible;
-                $modblog->uservisible = false;
-                $modquadern->uservisible = false;
-
                 // 0-section is displayed a little different then the others
                 if ($thissection->summary or !empty($modinfo->sections[0]) or $PAGE->user_is_editing()) {
                     echo $this->section_header($thissection, $course, false, 0);
-                    echo $this->courserenderer->course_section_cm_list($course, $thissection, 0);
+                    // Mostra els mòduls excepte el blog i el quadern
+                    echo $this->course_section0_cm_list($course, $thissection, 0, array(), $cmblog, $controller->cm);
                     echo $this->courserenderer->course_section_add_cm_control($course, 0, 0);
                     echo $this->section_footer();
                 }
 
-                $modblog->uservisible = $blogvisible;
-                $modquadern->uservisible = $quadernvisible;
-
-                // Blog i quadern
+                // Blog i quadern ampliats
                 echo $this->end_section_list();
                 if ($cmblog) {
                     $this->print_blog($course, $options, $cmblog, $controller);
@@ -85,59 +84,64 @@ class format_fpd_renderer extends format_section_renderer_base {
                 continue;
             }
 
-            if (!$PAGE->user_is_editing() && $course->coursedisplay == COURSE_DISPLAY_MULTIPAGE) {
-                // Display section summary only.
-                echo $this->section_summary($thissection, $course, null);
-            } else {
-                echo $this->section_header($thissection, $course, false, 0);
-                if ($thissection->uservisible) {
-                    echo $this->courserenderer->course_section_cm_list($course, $thissection, 0);
-                    echo $this->courserenderer->course_section_add_cm_control($course, $section, 0);
-                }
-                echo $this->section_footer();
+            echo $this->section_header($thissection, $course, false, 0);
+            if ($thissection->uservisible) {
+                echo $this->courserenderer->course_section_cm_list($course, $thissection, 0);
+                echo $this->courserenderer->course_section_add_cm_control($course, $section, 0);
             }
+            echo $this->section_footer();
         }
 
-        if ($PAGE->user_is_editing() and has_capability('moodle/course:update', $context)) {
-            // Print stealth sections if present.
-            foreach ($modinfo->get_section_info_all() as $section => $thissection) {
-                if ($section <= $course->numsections or empty($modinfo->sections[$section])) {
-                    // this is not stealth section or it is empty
+        echo $this->end_section_list();
+    }
+
+    private function course_section0_cm_list($course, $section, $sectionreturn, $displayoptions, $cmblog, $cmquadern) {
+        // Codi basat en core_course_renderer::course_section_cm_list,
+        //  amb aquestes diferències:
+        //  - Ocultació del quadern i del blog
+        //  - Elimnació dels casos amb l'edició activada
+        //  - Canvi de $this per $this->courserenderer
+
+        global $USER;
+
+        $output = '';
+        $modinfo = get_fast_modinfo($course);
+        if (is_object($section)) {
+            $section = $modinfo->get_section_info($section->section);
+        } else {
+            $section = $modinfo->get_section_info($section);
+        }
+        $completioninfo = new completion_info($course);
+
+        // Get the list of modules visible to user (excluding the module being moved if there is one)
+        $moduleshtml = array();
+        if (!empty($modinfo->sections[$section->section])) {
+            foreach ($modinfo->sections[$section->section] as $modnumber) {
+                $mod = $modinfo->cms[$modnumber];
+                // Oculta el blog i el quadern
+                if ($mod->id == $cmblog->id or $mod->id == $cmquadern->id) {
                     continue;
                 }
-                echo $this->stealth_section_header($section);
-                echo $this->courserenderer->course_section_cm_list($course, $thissection, 0);
-                echo $this->stealth_section_footer();
+                if ($modulehtml = $this->courserenderer->course_section_cm($course,
+                        $completioninfo, $mod, $sectionreturn, $displayoptions)) {
+                    $moduleshtml[$modnumber] = $modulehtml;
+                }
             }
-
-            echo $this->end_section_list();
-
-            echo html_writer::start_tag('div', array('id' => 'changenumsections', 'class' => 'mdl-right'));
-
-            // Increase number of sections.
-            $straddsection = get_string('increasesections', 'moodle');
-            $url = new moodle_url('/course/changenumsections.php',
-                array('courseid' => $course->id,
-                      'increase' => true,
-                      'sesskey' => sesskey()));
-            $icon = $this->output->pix_icon('t/switch_plus', $straddsection);
-            echo html_writer::link($url, $icon.get_accesshide($straddsection), array('class' => 'increase-sections'));
-
-            if ($course->numsections > 0) {
-                // Reduce number of sections sections.
-                $strremovesection = get_string('reducesections', 'moodle');
-                $url = new moodle_url('/course/changenumsections.php',
-                    array('courseid' => $course->id,
-                          'increase' => false,
-                          'sesskey' => sesskey()));
-                $icon = $this->output->pix_icon('t/switch_minus', $strremovesection);
-                echo html_writer::link($url, $icon.get_accesshide($strremovesection), array('class' => 'reduce-sections'));
-            }
-
-            echo html_writer::end_tag('div');
-        } else {
-            echo $this->end_section_list();
         }
+
+        if (!empty($moduleshtml)) {
+            $output .= html_writer::start_tag('ul', array('class' => 'section img-text'));
+            foreach ($moduleshtml as $modnumber => $modulehtml) {
+                $mod = $modinfo->cms[$modnumber];
+                $modclasses = 'activity '. $mod->modname. ' modtype_'.$mod->modname. ' '. $mod->get_extra_classes();
+                $output .= html_writer::start_tag('li', array('class' => $modclasses, 'id' => 'module-'. $mod->id));
+                $output .= $modulehtml;
+                $output .= html_writer::end_tag('li');
+            }
+            $output .= html_writer::end_tag('ul'); // .section
+        }
+
+        return $output;
     }
 
     protected function start_section_list() {
