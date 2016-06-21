@@ -133,7 +133,7 @@ class format_fpd_renderer extends format_section_renderer_base {
             $output .= html_writer::start_tag('ul', array('class' => 'section img-text'));
             foreach ($moduleshtml as $modnumber => $modulehtml) {
                 $mod = $modinfo->cms[$modnumber];
-                $modclasses = 'activity '. $mod->modname. ' modtype_'.$mod->modname. ' '. $mod->get_extra_classes();
+                $modclasses = 'activity '. $mod->modname. ' modtype_'.$mod->modname. ' '. $mod->extraclasses;
                 $output .= html_writer::start_tag('li', array('class' => $modclasses, 'id' => 'module-'. $mod->id));
                 $output .= $modulehtml;
                 $output .= html_writer::end_tag('li');
@@ -208,7 +208,7 @@ class format_fpd_renderer extends format_section_renderer_base {
         $name = format_string(
             $cmblog->name, true, array('context' => $context));
 
-        $link = $this->output->action_link($cmblog->get_url(), $name);
+        $link = $this->output->action_link($cmblog->url, $name);
 
         if ($this->page->user_is_editing()) {
             $actions = course_get_cm_edit_actions($mod);
@@ -229,7 +229,7 @@ class format_fpd_renderer extends format_section_renderer_base {
                 $oublog, $context, 0, $cmblog, 0, -1, null, '', false, false,
                 false, true, $options['blognumunread']);
             if ($posts) {
-                $url = new moodle_url($cmblog->get_url());
+                $url = new moodle_url($cmblog->url);
                 $url->params(array('individual' => 0, 'unread' => true));
                 $this->print_posts($oublog, $posts, $url, 'Entrades no llegides');
             }
@@ -240,7 +240,7 @@ class format_fpd_renderer extends format_section_renderer_base {
                 $oublog, $context, 0, $cmblog, 0, -1, null, '', false, false,
                 false, false, $options['blognumrecent']);
             if ($posts) {
-                $url = new moodle_url($cmblog->get_url());
+                $url = new moodle_url($cmblog->url);
                 $url->params(array('individual' => 0));
                 $this->print_posts($oublog, $posts, $url, 'Entrades recents');
             }
@@ -251,7 +251,7 @@ class format_fpd_renderer extends format_section_renderer_base {
                 $oublog, $context, 0, $cmblog, 0, -1, null, '', false, false,
                 true, false, $options['blognumtoprated']);
             if ($posts) {
-                $url = new moodle_url($cmblog->get_url());
+                $url = new moodle_url($cmblog->url);
                 $url->params(array('individual' => 0, 'toprated' => true));
                 $this->print_posts($oublog, $posts, $url, 'Entrades més ben valorades');
             }
