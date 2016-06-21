@@ -180,7 +180,7 @@ class format_fpd_renderer extends format_section_renderer_base {
                 '/mod/oublog/viewpost.php', array('post' => $post->id));
             $link = $this->output->action_link(
                 $url, format_string($post->title));
-            $rating = $oublog->allowratings ? $this->post_rating($post) : '';
+            $rating = (isset($oublog->allowratings) and $oublog->allowratings) ? $this->post_rating($post) : '';
             $date = userdate(
                 $post->timeposted, get_string('strftimerecent'));
             $title = $link . $rating;
@@ -227,7 +227,7 @@ class format_fpd_renderer extends format_section_renderer_base {
             and $controller and $controller->es_professor()) {
             list($posts, $cnt) = oublog_get_posts(
                 $oublog, $context, 0, $cmblog, 0, -1, null, '', false, false,
-                false, true, $options['blognumunread']);
+                true, $options['blognumunread']);
             if ($posts) {
                 $url = new moodle_url($cmblog->url);
                 $url->params(array('individual' => 0, 'unread' => true));
@@ -238,7 +238,7 @@ class format_fpd_renderer extends format_section_renderer_base {
         if ($options['blognumrecent'] > 0) {
             list($posts, $cnt) = oublog_get_posts(
                 $oublog, $context, 0, $cmblog, 0, -1, null, '', false, false,
-                false, false, $options['blognumrecent']);
+                false, $options['blognumrecent']);
             if ($posts) {
                 $url = new moodle_url($cmblog->url);
                 $url->params(array('individual' => 0));
@@ -246,10 +246,10 @@ class format_fpd_renderer extends format_section_renderer_base {
             }
         }
 
-        if ($oublog->allowratings and $options['blognumtoprated'] > 0) {
+        if (isset($oublog->allowratings) and $oublog->allowratings and $options['blognumtoprated'] > 0) {
             list($posts, $cnt) = oublog_get_posts(
                 $oublog, $context, 0, $cmblog, 0, -1, null, '', false, false,
-                true, false, $options['blognumtoprated']);
+                false, $options['blognumtoprated']);
             if ($posts) {
                 $url = new moodle_url($cmblog->url);
                 $url->params(array('individual' => 0, 'toprated' => true));
