@@ -74,7 +74,7 @@ class format_fpd extends format_base {
 
         require_once($CFG->dirroot . '/mod/oublog/lib.php');
 
-        $data = new object;
+        $data = new stdClass();
         $data->course = $this->courseid;
         $data->name = 'Blog';
         $data->grade = 0;
@@ -101,7 +101,7 @@ class format_fpd extends format_base {
 
         require_once($CFG->dirroot . '/mod/fpdquadern/lib.php');
 
-        $data = new object;
+        $data = new stdClass();
         $data->course = $this->courseid;
         $data->name = 'Quadern';
         $data->grade = 0;
