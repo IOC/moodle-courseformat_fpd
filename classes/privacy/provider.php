@@ -14,8 +14,27 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-$string['currentsection'] = 'Aquesta secció';
-$string['pluginname'] = 'Format FPD';
-$string['hidefromothers'] = 'Oculta';
-$string['showfromothers'] = 'Mostra';
-$string['privacy:metadata'] = 'FPD format plugin does not store any personal data.';
+/**
+ * Privacy Subsystem implementation for format_fpd.
+ *
+ * @package    format_fpd
+ * @copyright  2018 Institut Obert de Catalunya
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
+namespace format_fpd\privacy;
+
+defined('MOODLE_INTERNAL') || die();
+
+class provider implements \core_privacy\local\metadata\null_provider {
+
+    /**
+     * Get the language string identifier with the component's language
+     * file to explain why this plugin stores no data.
+     *
+     * @return  string
+     */
+    public static function get_reason() : string {
+        return 'privacy:metadata';
+    }
+}

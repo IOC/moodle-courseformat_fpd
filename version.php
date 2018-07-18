@@ -8,8 +8,8 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2016062101;
-$plugin->requires  = 2014051200;
+$plugin->version   = 2016062102;
+$plugin->requires  = 2018051700;
 $plugin->component = 'format_fpd';
 $plugin->dependencies = array(
     'mod_fpdquadern' => 2013102908,
